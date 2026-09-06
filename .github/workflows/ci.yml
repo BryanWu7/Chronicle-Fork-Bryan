@@ -338,12 +338,15 @@ jobs:
         # 141 both close it. CHROMIUM_BIN is honoured FIRST by every finder,
         # so setting it here makes the pin real. A missing binary fails this
         # step by name rather than falling through to PATH and hiding the pin
-        # again.
+        # again. Playwright installs under PLAYWRIGHT_BROWSERS_PATH, which this
+        # job's env sets to /opt/pw-browsers (the dev container's layout); the
+        # fallback is Playwright's own default.
         run: |
           shopt -s nullglob
-          bins=("$HOME"/.cache/ms-playwright/chromium-*/chrome-linux/chrome)
+          root="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}"
+          bins=("$root"/chromium-*/chrome-linux/chrome)
           if [ "${#bins[@]}" -ne 1 ] || [ ! -x "${bins[0]}" ]; then
-            echo "expected exactly one pinned Chromium under ~/.cache/ms-playwright, found: ${bins[*]:-none}"
+            echo "expected exactly one pinned Chromium under $root, found: ${bins[*]:-none}"
             exit 1
           fi
           "${bins[0]}" --version
